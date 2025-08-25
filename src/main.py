@@ -3,8 +3,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.router import router as auth_router
 from src.database import get_db_session
 from src.exceptions import AppError
+from src.users.router import router as users_router
 
 # Create the main FastAPI application instance
 app = FastAPI(
@@ -12,6 +14,9 @@ app = FastAPI(
     description="API for the BookInn service.",
     version="0.1.0",
 )
+
+app.include_router(auth_router)
+app.include_router(users_router)
 
 
 @app.exception_handler(AppError)

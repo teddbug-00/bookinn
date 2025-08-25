@@ -4,13 +4,21 @@ from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings
 
 
-class MainConfig(BaseSettings):
-    DB_USER: str = ""
-    DB_PASSWORD: str = ""
-    DB_HOST: str = ""
-    DB_PORT: int = 5432
-    DB_NAME: str = ""
+class Settings(BaseSettings):
+    # Database settings
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_NAME: str
     DB_ECHO_LOG: bool = True  # Set this to false in production
+
+    # Auth settings
+    ACCESS_SECRET_KEY: str
+    REFRESH_SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
 
     @computed_field
     @property
@@ -22,4 +30,4 @@ class MainConfig(BaseSettings):
         return cast(PostgresDsn, url)
 
 
-settings = MainConfig()
+settings = Settings()
