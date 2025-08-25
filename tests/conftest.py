@@ -10,7 +10,6 @@ load_dotenv()
 from src.main import app
 from src.database import Base, get_db_session
 
-# Use an in-memory SQLite database for testing
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 

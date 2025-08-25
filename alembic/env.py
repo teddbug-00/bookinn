@@ -12,8 +12,12 @@ from src.config import settings
 
 from alembic import context
 
-from src.database import Base
 from src.users.models import User  # noqa
+from src.amenities.models import *  # noqa
+from src.listings.models import *  # noqa
+from src.images.models import *  # noqa
+from src.reviews.models import *  # noqa
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
