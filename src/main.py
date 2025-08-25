@@ -10,6 +10,7 @@ from src.database import get_db_session
 from src.exceptions import AppError
 from src.images import models as image_models  # noqa
 from src.listings import models as listing_models  # noqa
+from src.listings.router import router as listings_router
 from src.reviews import models as review_models  # noqa
 # Import all models to ensure they are registered with SQLAlchemy's declarative base
 from src.users import models as user_models  # noqa
@@ -25,6 +26,7 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(amenities_router)
+app.include_router(listings_router)
 
 
 @app.exception_handler(AppError)

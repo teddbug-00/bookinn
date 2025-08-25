@@ -8,7 +8,7 @@ class PricingUnit(str, enum.Enum):
     PER_YEAR = "per_year"
 
 
-class ListingType(enum.Enum):
+class ListingType(str, enum.Enum):
     """An enum for different types of listings."""
     HOTEL = "hotel"
     HOSTEL = "hostel"
