@@ -4,7 +4,7 @@ from src.auth.security import password_manager
 from src.users.dependencies import get_user_by_email
 from src.users.exceptions import UserAlreadyExistsException
 from src.users.models import User
-from src.users.schemas import UserCreate
+from src.users.schemas import UserCreate, UserUpdate
 
 
 async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
@@ -14,8 +14,26 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
         raise UserAlreadyExistsException()
 
     hashed_password = password_manager.get_hash(user_in.password)
-    db_user = User(email=user_in.email, name=user_in.name, hashed_password=hashed_password)
+    db_user = User(
+        email=user_in.email,
+        name=user_in.name,
+        date_of_birth=user_in.date_of_birth,
+        hashed_password=hashed_password
+    )
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
+
+async def update_user(db: AsyncSession, user: User, user_in: UserUpdate) -> User:
+    """Updates a user's details in the database."""
+    update_data = user_in.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(user, field, value)
+
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user

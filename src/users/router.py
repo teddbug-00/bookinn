@@ -7,7 +7,7 @@ from src.auth.dependencies import get_current_user
 from src.database import get_db_session
 from src.users import services
 from src.users.models import User
-from src.users.schemas import UserCreate, UserRead
+from src.users.schemas import UserCreate, UserRead, UserUpdate  # Import UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -20,6 +20,19 @@ async def read_current_user_profile(
     Retrieves the details for the currently authenticated user.
     """
     return current_user
+
+
+@router.patch("/profile", response_model=UserRead, summary="Update current user profile")
+async def update_current_user_profile(
+        user_in: UserUpdate,
+        current_user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Updates the profile for the currently authenticated user.
+    """
+    user = await services.update_user(db=session, user=current_user, user_in=user_in)
+    return user
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead, summary="Register a new user")
