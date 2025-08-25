@@ -3,9 +3,16 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.amenities import models as amenity_models  # noqa
+from src.amenities.router import router as amenities_router
 from src.auth.router import router as auth_router
 from src.database import get_db_session
 from src.exceptions import AppError
+from src.images import models as image_models  # noqa
+from src.listings import models as listing_models  # noqa
+from src.reviews import models as review_models  # noqa
+# Import all models to ensure they are registered with SQLAlchemy's declarative base
+from src.users import models as user_models  # noqa
 from src.users.router import router as users_router
 
 # Create the main FastAPI application instance
@@ -17,6 +24,7 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(amenities_router)
 
 
 @app.exception_handler(AppError)

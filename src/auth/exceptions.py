@@ -28,3 +28,12 @@ class TokenExpiredException(AppError):
     def __init__(self):
         message = "Token has expired"
         super().__init__(message)
+
+
+class NotEnoughPermissionsException(AppError):
+    """ Raised when a user is not authorized to perform an action. """
+    status_code = status.HTTP_403_FORBIDDEN
+
+    def __init__(self):
+        message = "Not enough permissions"
+        super().__init__(message)

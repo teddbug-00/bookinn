@@ -1,3 +1,4 @@
+from datetime import date
 from typing import AsyncGenerator
 
 import pytest_asyncio
@@ -9,11 +10,18 @@ load_dotenv()
 
 from src.main import app
 from src.database import Base, get_db_session
+from src.users import models as user_models  # noqa
+from src.listings import models as listing_models  # noqa
+from src.amenities import models as amenity_models  # noqa
+from src.reviews import models as review_models  # noqa
+from src.images import models as image_models  # noqa
+from src.users.models import User
+from src.auth.security import password_manager
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def test_engine():
     """
     Provides an asynchronous SQLAlchemy engine for the test database.
@@ -78,6 +86,32 @@ async def authenticated_client(client: AsyncClient) -> AsyncClient:
     login_response = await client.post(
         "/auth/login",
         json={"email": user_data["email"], "password": user_data["password"]}
+    )
+    token = login_response.json()["access_token"]
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
+
+
+@pytest_asyncio.fixture(scope="function")
+async def authenticated_admin_client(client: AsyncClient, test_session: AsyncSession) -> AsyncClient:
+    """
+    Provides an authenticated client with admin privileges.
+    """
+    # Create an admin user directly in the database
+    admin_user = User(
+        email="admin@example.com",
+        hashed_password=password_manager.get_hash("adminpassword"),
+        name="Admin User",
+        date_of_birth=date(1990, 1, 1),
+        is_admin=True
+    )
+    test_session.add(admin_user)
+    await test_session.flush()
+
+    # Log in as the admin user
+    login_response = await client.post(
+        "/auth/login",
+        json={"email": "admin@example.com", "password": "adminpassword"}
     )
     token = login_response.json()["access_token"]
     client.headers["Authorization"] = f"Bearer {token}"

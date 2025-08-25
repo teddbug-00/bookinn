@@ -25,4 +25,4 @@ class Review(Base):
     reviewer_id: Mapped[uuid.UUID] = mapped_column(sa.ForeignKey("users.id"), nullable=False, index=True)
 
     listing: Mapped["Listing"] = relationship(back_populates="reviews")
-    user: Mapped["User"] = relationship(back_populates="reviews")
+    reviewer: Mapped["User"] = relationship(back_populates="reviews")
