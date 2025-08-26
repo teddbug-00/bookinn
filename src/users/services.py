@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.security import password_manager
-from src.users.dependencies import get_user_by_email
+from src.auth import utils as auth_utils
 from src.users.exceptions import UserAlreadyExistsException
 from src.users.models import User
+from src.users.repository import get_user_by_email
 from src.users.schemas import UserCreate, UserUpdate
 
 
@@ -13,7 +13,7 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     if await get_user_by_email(db, user_in.email):
         raise UserAlreadyExistsException()
 
-    hashed_password = password_manager.get_hash(user_in.password)
+    hashed_password = auth_utils.get_password_hash(user_in.password)
     db_user = User(
         email=user_in.email,
         name=user_in.name,

@@ -16,7 +16,7 @@ from src.amenities import models as amenity_models  # noqa
 from src.reviews import models as review_models  # noqa
 from src.images import models as image_models  # noqa
 from src.users.models import User
-from src.auth.security import password_manager
+from src.auth import utils as auth_utils
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -100,7 +100,7 @@ async def authenticated_admin_client(client: AsyncClient, test_session: AsyncSes
     # Create an admin user directly in the database
     admin_user = User(
         email="admin@example.com",
-        hashed_password=password_manager.get_hash("adminpassword"),
+        hashed_password=auth_utils.get_password_hash("adminpassword"),
         name="Admin User",
         date_of_birth=date(1990, 1, 1),
         is_admin=True
