@@ -11,15 +11,12 @@ from src.database import get_db_session
 from src.users import repository as user_repository
 from src.users.models import User
 
-# This tells FastAPI where to get the token from for dependency injection.
-# The `tokenUrl` should point to the endpoint that issues tokens (e.g., /auth/token).
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 async def _get_user_from_token(token: str, session: AsyncSession) -> User:
     """
-    Private helper to decode an access token and fetch the corresponding user.
-    This consolidates the common logic for user authentication dependencies.
+    Private helper to decode an access token and fetch the corresponding user
     """
     payload = auth_utils.decode_token(token, settings.ACCESS_SECRET_KEY)
 

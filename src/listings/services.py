@@ -5,34 +5,32 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.amenities.models import Amenity
+from src.amenities import repository as amenity_repository
 from src.listings import models
 from src.listings.exceptions import InvalidAmenitiesException
 from src.listings.schemas import ListingCreate
 
 
-async def get_amenities_by_ids(db: AsyncSession, amenity_ids: List[uuid.UUID]) -> List[Amenity]:
-    """Fetches a list of Amenity objects from a list of IDs, raising an error if any are not found."""
+async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.UUID]) -> List[models.Amenity]:
+    """Helper to fetch and validate amenities for a new listing."""
     if not amenity_ids:
         return []
 
-    query = select(Amenity).where(Amenity.id.in_(amenity_ids))
-    result = await db.execute(query)
-    amenities = result.scalars().all()
+    amenities = await amenity_repository.get_by_ids(db, amenity_ids)
 
     if len(amenities) != len(set(amenity_ids)):
         found_ids = {amenity.id for amenity in amenities}
         invalid_ids = [str(aid) for aid in amenity_ids if aid not in found_ids]
         raise InvalidAmenitiesException(invalid_ids=invalid_ids)
 
-    return amenities
+    return list(amenities)
 
 
 async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: uuid.UUID) -> models.Listing:
     """Creates a new listing, validating and associating amenities."""
     model_class = getattr(models, listing_in.type.value.capitalize())
 
-    amenities = await get_amenities_by_ids(db, listing_in.amenity_ids)
+    amenities = await _validate_and_get_amenities(db, listing_in.amenity_ids)
 
     listing_data = listing_in.model_dump(exclude={"amenity_ids"})
     db_listing = model_class(**listing_data, owner_id=owner_id)
