@@ -1,10 +1,12 @@
 import uuid
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AmenityBase(BaseModel):
     name: str
+    icon_url: str | None = Field(None, max_length=2048)
+
 
 
 class AmenityCreate(AmenityBase):
@@ -13,6 +15,7 @@ class AmenityCreate(AmenityBase):
 
 class AmenityUpdate(BaseModel):
     name: str | None = None
+    icon_url: str | None = Field(None, max_length=2048)
 
 
 class AmenityRead(AmenityBase):

@@ -10,6 +10,7 @@ from src.listings.enums import ListingType, PricingUnit
 class AmenityInListingRead(BaseModel):
     id: uuid.UUID
     name: str
+    icon_url: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -65,7 +66,6 @@ class ListingReadBase(ListingBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     average_rating: float | None = None
-    amenities: List[AmenityInListingRead] = []
 
     model_config = ConfigDict(from_attributes=True)
 

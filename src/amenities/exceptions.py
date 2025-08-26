@@ -2,7 +2,7 @@ import uuid
 
 from starlette import status
 
-from src.exceptions import AppError
+from src.exceptions.base import AppError
 
 
 class AmenityNotFoundException(AppError):

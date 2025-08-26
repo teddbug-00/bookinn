@@ -3,6 +3,7 @@ from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.amenities.models import Amenity
 from src.listings import models
@@ -39,6 +40,16 @@ async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: 
 
     db.add(db_listing)
     await db.commit()
-    await db.refresh(db_listing, attribute_names=["amenities", "owner"])
 
-    return db_listing
+    # After commit, the object is expired. To get the relationships loaded
+    # for the response model, we need to re-fetch it from the database
+    # with the extra relationships.
+    query = (
+        select(models.Listing)
+        .options(selectinload(models.Listing.amenities))
+        .where(models.Listing.id == db_listing.id)
+    )
+    result = await db.execute(query)
+    refreshed_listing = result.scalar_one()
+
+    return refreshed_listing

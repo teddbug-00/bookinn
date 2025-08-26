@@ -24,5 +24,7 @@ class Amenity(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(sa.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(sa.String(length=100), unique=True, nullable=False)
+    icon_url: Mapped[str | None] = mapped_column(sa.String(length=2048), nullable=True)
+
     listings: Mapped[List["Listing"]] = relationship(secondary=listing_amenities_association_table,
                                                      back_populates="amenities")

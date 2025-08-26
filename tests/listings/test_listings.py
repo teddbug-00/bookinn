@@ -54,8 +54,8 @@ async def test_create_hotel_listing_authenticated(
     assert data["name"] == "Grand Test Hotel"
     assert data["type"] == "hotel"
     assert data["star_rating"] == 5
-    assert len(data["amenities"]) == 2
-    assert {a["id"] for a in data["amenities"]} == {amenity1_id, amenity2_id}
+    assert "amenities" not in data
+    assert set(data["amenity_ids"]) == {str(amenity1_id), str(amenity2_id)}
 
 
 @pytest.mark.asyncio

@@ -2,6 +2,7 @@ import uuid
 from typing import List, TYPE_CHECKING
 
 import sqlalchemy as sa
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.amenities.models import Amenity, listing_amenities_association_table
@@ -53,6 +54,11 @@ class Listing(Base):
         "polymorphic_identity": "listing",
         "polymorphic_on": "type",
     }
+
+    @hybrid_property
+    def amenity_ids(self) -> list[uuid.UUID]:
+        """Provides a list of amenity IDs associated with the listing."""
+        return [amenity.id for amenity in self.amenities]
 
 
 class Hotel(Listing):

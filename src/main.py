@@ -1,43 +1,21 @@
-from fastapi import FastAPI, Depends, Request
-from fastapi.responses import JSONResponse
+from fastapi import Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.amenities import models as amenity_models  # noqa
-from src.amenities.router import router as amenities_router
-from src.auth.router import router as auth_router
+from src.app import App
 from src.database import get_db_session
-from src.exceptions import AppError
-from src.images import models as image_models  # noqa
-from src.listings import models as listing_models  # noqa
-from src.listings.router import router as listings_router
-from src.reviews import models as review_models  # noqa
-# Import all models to ensure they are registered with SQLAlchemy's declarative base
-from src.users import models as user_models  # noqa
-from src.users.router import router as users_router
 
-# Create the main FastAPI application instance
-app = FastAPI(
-    title="BookInn API",
-    description="API for the BookInn service.",
-    version="0.1.0",
+app = (
+    App().title("BookInn API")
+    .description("API for the BookInn service, providing functionalities for property listings and bookings.")
+    .version("0.1.0")
+    .routers()
+    .exception_handlers()
+    .create()
 )
 
-app.include_router(auth_router)
-app.include_router(users_router)
-app.include_router(amenities_router)
-app.include_router(listings_router)
 
-
-@app.exception_handler(AppError)
-async def app_exception_handler(request: Request, exc: AppError):
-    """Global handler to catch all AppError exceptions."""
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": str(exc)},
-    )
-
-
+# --- Monitoring Endpoints ---
 @app.get("/", tags=["Monitoring"])
 async def read_root():
     """A simple root endpoint to confirm the app is running."""
@@ -51,5 +29,4 @@ async def health_check(session: AsyncSession = Depends(get_db_session)):
         await session.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
-        # Re-raise the error to let FastAPI's default handlers manage it.
         raise e
