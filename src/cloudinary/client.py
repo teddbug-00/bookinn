@@ -14,3 +14,12 @@ class CloudinaryClient:
             api_secret=cloudinary_settings.CLOUDINARY_API_SECRET,
             secure=True,
         )
+
+        # Define the standard transformations to be applied to all uploads
+        self.transformation_rules = {
+            "width": 1280,
+            "height": 1280,
+            "crop": "limit",
+            "quality": "auto:good",
+            "fetch_format": "webp"
+        }
