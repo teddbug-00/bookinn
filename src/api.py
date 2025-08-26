@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from src.amenities.router import router as amenities_router
 from src.auth.router import router as auth_router
+from src.images.router import router as images_router
 from src.listings.router import router as listings_router
 from src.reviews.router import router as reviews_router
 from src.users.router import router as users_router
@@ -15,4 +16,5 @@ api_router.include_router(auth_router)
 api_router.include_router(users_router)
 api_router.include_router(listings_router)
 api_router.include_router(reviews_router)
+api_router.include_router(images_router)
 api_router.include_router(amenities_router)
