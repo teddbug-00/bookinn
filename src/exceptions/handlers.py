@@ -9,7 +9,7 @@ from src.exceptions.base import AppError
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
     Custom handler for Pydantic's validation errors to provide a cleaner,
-    more user-friendly response format.
+    more friendly response format.
     """
     error_messages = []
     for error in exc.errors():

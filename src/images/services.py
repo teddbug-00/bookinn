@@ -1,6 +1,7 @@
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.cloudinary import utils as cloudinary_utils
 from src.cloudinary.client import CloudinaryClient
 from src.images import repository as image_repository
 from src.images.exceptions import ThumbnailAlreadyExistsException
@@ -26,7 +27,7 @@ async def upload_listing_image(
             raise ThumbnailAlreadyExistsException()
 
     # Upload the image to cloudinary in a "listings" folder
-    upload_result = await client.upload_image(file, folder="listings")
+    upload_result = await cloudinary_utils.upload_image(file, folder="listings")
     image_url = upload_result.get("secure_url")
 
     image_data = ImageCreate(url=image_url, is_thumbnail=is_thumbnail, listing_id=listing.id)
