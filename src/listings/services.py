@@ -90,8 +90,16 @@ async def update_listing(
 
     db.add(db_listing)
     await db.commit()
-    await db.refresh(db_listing)
-    return db_listing
+
+    # After commit, relationships might be expired. We need to re-fetch the
+    # listing with all the relationships required by the response model.
+    query = (
+        select(models.Listing)
+        .options(selectinload(models.Listing.amenities), selectinload(models.Listing.images))
+        .where(models.Listing.id == db_listing.id)
+    )
+    result = await db.execute(query)
+    return result.scalar_one()
 
 
 async def delete_listing(db: AsyncSession, listing_id: uuid.UUID, current_user: User) -> None:
