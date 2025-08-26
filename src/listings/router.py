@@ -20,7 +20,8 @@ async def get_all_listings(
         session: AsyncSession = Depends(get_db_session)
 ):
     """ Retrieves a list of all available listings """
-    return await listing_service.get_listings(session, pagination)
+    items, total = await listing_service.get_listings(session, pagination)
+    return Page(items=items, total=total, page=pagination.page, size=pagination.size)
 
 
 @router.get("/{listing_id}", response_model=ListingRead, summary="Get a single listing by ID")
