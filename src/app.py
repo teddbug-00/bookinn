@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.api import api_router
+from src.api import api_router, admin_api_router
 from src.exceptions.handlers import exception_handlers
 
 
@@ -31,7 +31,7 @@ class App:
 
     def routers(self) -> 'App':
         """Includes all the feature routers into the application."""
-        self._routers_to_include = [api_router]
+        self._routers_to_include = [api_router, admin_api_router]
         return self
 
     def exception_handlers(self) -> 'App':
