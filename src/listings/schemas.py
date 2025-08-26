@@ -28,8 +28,8 @@ class AmenityInListingRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# --- Base Schemas ---
-class ListingBase(BaseModel):
+class ListingCore(BaseModel):
+    """The absolute core fields that define a listing."""
     name: str = Field(..., min_length=3, max_length=100)
     description: str | None = None
     address: str
@@ -39,6 +39,11 @@ class ListingBase(BaseModel):
     price: float = Field(..., gt=0)
     price_unit: PricingUnit
     currency: str = "GHS"
+
+
+# --- Base Schemas ---
+class ListingBase(ListingCore):
+    """Base schema for creating a listing, includes amenity IDs."""
     amenity_ids: List[uuid.UUID] = []
 
 
@@ -75,16 +80,8 @@ ListingCreate = Annotated[
 
 
 # --- Update Schemas (for PATCH request body) ---
-class ListingUpdate(BaseModel):
+class ListingUpdate(ListingCore):
     """Base schema for updating a listing, all fields are optional."""
-    name: str | None = Field(None, min_length=3, max_length=100)
-    description: str | None = None
-    address: str | None = None
-    city: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
-    price: float | None = Field(None, gt=0)
-    price_unit: PricingUnit | None = None
     amenity_ids: List[uuid.UUID] | None = None
 
 
@@ -109,10 +106,11 @@ class GuesthouseUpdate(ListingUpdate):
 
 
 # --- Read Schemas (for response body) ---
-class ListingReadBase(ListingBase):
+class ListingReadBase(ListingCore):
     id: uuid.UUID
     owner_id: uuid.UUID
     average_rating: float | None = None
+    amenities: List[AmenityInListingRead] = []
     images: List[ImageRead] = []
 
     model_config = ConfigDict(from_attributes=True)
