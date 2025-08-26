@@ -27,7 +27,7 @@ async def create(db: AsyncSession, booking_in: ApartmentBookingCreate, user_id: 
                  check_out_date: datetime.date) -> Booking:
     """Creates a new booking record."""
     db_booking = Booking(
-        **booking_in.model_dump(exclude={"type"}), user_id=user_id, total_price=total_price,
+        **booking_in.model_dump(exclude={"type", "number_of_months"}), user_id=user_id, total_price=total_price,
         check_out_date=check_out_date, type="apartment"
     )
     db.add(db_booking)
