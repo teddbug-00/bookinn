@@ -1,7 +1,7 @@
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.cloudinary import upload_image
+from src.cloudinary.client import upload_image
 from src.images import repository as image_repository
 from src.images.exceptions import ThumbnailAlreadyExistsException
 from src.images.models import Image
