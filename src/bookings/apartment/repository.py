@@ -15,4 +15,5 @@ async def create(db: AsyncSession, booking_in: ApartmentBookingCreate, user_id, 
         total_price=total_price
     )
     db.add(db_booking)
+    await db.flush()
     return db_booking

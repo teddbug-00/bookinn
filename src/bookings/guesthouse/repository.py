@@ -38,6 +38,5 @@ async def create(
         total_price=total_price
     )
     db.add(db_booking)
-    await db.commit()
-    await db.refresh(db_booking)
+    await db.flush()
     return db_booking

@@ -30,4 +30,8 @@ async def create_apartment_booking(db: AsyncSession, booking_in: ApartmentBookin
     total_price = apartment.price * booking_in.number_of_months
 
     # 4. Create the booking record
-    return await apartment_booking_repo.create(db, booking_in, user.id, total_price, check_out_date)
+    db_booking = await apartment_booking_repo.create(db, booking_in, user.id, total_price, check_out_date)
+    await db.commit()
+    await db.refresh(db_booking)
+
+    return db_booking
