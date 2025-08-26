@@ -21,9 +21,11 @@ class User(Base):
     profile_picture_url: Mapped[str | None] = mapped_column(sa.String(length=2048), nullable=True)
     profile_picture_public_id: Mapped[str | None] = mapped_column(sa.String(length=255), nullable=True)
     is_admin: Mapped[bool] = mapped_column(sa.Boolean, default=False)
+    hashed_password: Mapped[str] = mapped_column(sa.String, nullable=False)
+
     listings: Mapped[List["Listing"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     reviews: Mapped[List["Review"]] = relationship(back_populates="reviewer", cascade="all, delete-orphan")
-    hashed_password: Mapped[str] = mapped_column(sa.String, nullable=False)
+    bookings: Mapped[List["Booking"]] = relationship(back_populates="user")
 
     def __str__(self):
         return str(self.id)

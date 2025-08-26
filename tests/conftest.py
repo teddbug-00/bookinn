@@ -10,6 +10,7 @@ load_dotenv()
 
 from src.main import app
 from src.database import Base, get_db_session
+from src.bookings import models as booking_models  # noqa
 from src.users import models as user_models  # noqa
 from src.listings import models as listing_models  # noqa
 from src.amenities import models as amenity_models  # noqa

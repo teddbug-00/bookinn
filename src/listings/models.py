@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from src.users.models import User  # noqa
     from src.images.models import Image  # noqa
     from src.reviews.models import Review  # noqa
+    from src.bookings.models import Booking  # noqa
 
 
 class Listing(Base):
@@ -48,6 +49,7 @@ class Listing(Base):
 
     images: Mapped[List["Image"]] = relationship(back_populates="listing", cascade="all, delete-orphan")
     reviews: Mapped[List["Review"]] = relationship(back_populates="listing", cascade="all, delete-orphan")
+    bookings: Mapped[List["Booking"]] = relationship(back_populates="listing", cascade="all, delete-orphan")
 
     # --- Inheritance Configuration ---
     type: Mapped[ListingType] = mapped_column(sa.Enum(ListingType))
@@ -104,6 +106,7 @@ class Apartment(Listing):
     number_of_bedrooms: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     number_of_bathrooms: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     max_guests: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    min_lease_months: Mapped[int] = mapped_column(sa.Integer, default=1)
 
     __mapper_args__ = {
         "polymorphic_identity": ListingType.APARTMENT,
