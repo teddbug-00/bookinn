@@ -1,6 +1,7 @@
 import cloudinary
 import cloudinary.uploader
 from fastapi import UploadFile
+from fastapi.concurrency import run_in_threadpool
 
 from src.config import settings
 
@@ -23,6 +24,5 @@ async def upload_image(file: UploadFile, folder: str) -> dict:
     """
     # The upload function from the cloudinary library is synchronous,
     # so we run it in a thread pool to avoid blocking the asyncio event loop.
-    loop = cloudinary.get_event_loop()
-    result = await loop.run_in_executor(None, cloudinary.uploader.upload, file.file, folder=folder)
+    result = await run_in_threadpool(cloudinary.uploader.upload, file.file, folder=folder)
     return result
