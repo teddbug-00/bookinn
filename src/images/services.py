@@ -26,10 +26,12 @@ async def upload_listing_image(
         if existing_thumbnail:
             raise ThumbnailAlreadyExistsException()
 
-    # Upload the image to cloudinary in a "listings" folder
-    upload_result = await cloudinary_utils.upload_image(
-        file, folder="listings", transformation=client.transformation_rules
-    )
+    # Create a dynamic folder path for the listing's images
+    folder_path = f"listings/{listing.id}"
+
+    # Upload the image to the specific folder in Cloudinary
+    upload_result = await cloudinary_utils.upload_image(file, folder=folder_path,
+                                                        transformation=client.transformation_rules)
     image_url = upload_result.get("secure_url")
 
     image_data = ImageCreate(url=image_url, is_thumbnail=is_thumbnail, listing_id=listing.id)
