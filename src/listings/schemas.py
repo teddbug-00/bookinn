@@ -7,6 +7,18 @@ from src.images.schemas import ImageRead
 from src.listings.enums import ListingType, PricingUnit
 
 
+class ListingSummaryRead(BaseModel):
+    """A slimmed-down schema for representing a listing in a list view."""
+    id: uuid.UUID
+    name: str
+    address: str
+    average_rating: float | None = None
+    total_reviews: int = 0
+    thumbnail_url: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # --- Shared Schemas ---
 class AmenityInListingRead(BaseModel):
     id: uuid.UUID

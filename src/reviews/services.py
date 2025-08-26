@@ -34,6 +34,7 @@ async def create_review(db: AsyncSession, review_in: ReviewCreate, listing: List
     avg_rating_query = select(func.avg(Review.rating)).where(Review.listing_id == listing.id)
     avg_rating_result = await db.execute(avg_rating_query)
     listing.average_rating = avg_rating_result.scalar()
+    listing.total_reviews += 1
 
     db.add(listing)
     await db.commit()

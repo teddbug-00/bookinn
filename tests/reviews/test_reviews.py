@@ -2,43 +2,6 @@ import pytest
 from httpx import AsyncClient
 
 
-@pytest.fixture
-async def listing_owner_client(client_factory) -> AsyncClient:
-    """Provides an authenticated client who will own the listings."""
-    owner_client = client_factory()
-    user_data = {
-        "email": "owner@example.com",
-        "password": "ownerpassword",
-        "name": "Listing Owner",
-        "date_of_birth": "1990-01-01"
-    }
-    await owner_client.post("/users/", json=user_data)
-    login_response = await owner_client.post("/auth/login",
-                                             json={"email": user_data["email"], "password": user_data["password"]})
-    token = login_response.json()["access_token"]
-    owner_client.headers["Authorization"] = f"Bearer {token}"
-    return owner_client
-
-
-@pytest.fixture
-async def reviewer_client(client_factory) -> AsyncClient:
-    """Provides a separate authenticated client to act as the reviewer."""
-    reviewer_client = client_factory()
-    user_data = {
-        "email": "reviewer@example.com",
-        "password": "reviewerpassword",
-        "name": "Reviewer User",
-        "date_of_birth": "1992-02-02"
-    }
-    # We use the new client to register and log in the reviewer
-    await reviewer_client.post("/users/", json=user_data)
-    login_response = await reviewer_client.post("/auth/login",
-                                                json={"email": user_data["email"], "password": user_data["password"]})
-    token = login_response.json()["access_token"]
-    reviewer_client.headers["Authorization"] = f"Bearer {token}"
-    return reviewer_client
-
-
 @pytest.mark.asyncio
 async def test_create_and_get_reviews(listing_owner_client: AsyncClient, reviewer_client: AsyncClient):
     """Test creating a review and then fetching it."""

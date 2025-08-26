@@ -39,6 +39,7 @@ class Listing(Base):
     # house_rules: Mapped[Optional[str]] = mapped_column(sa.Text)
 
     average_rating: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
+    total_reviews: Mapped[int] = mapped_column(sa.Integer, default=0, nullable=False, server_default=sa.text("0"))
     amenities: Mapped[List[Amenity]] = relationship(secondary=listing_amenities_association_table,
                                                     back_populates="listings")
 
@@ -59,6 +60,17 @@ class Listing(Base):
     def amenity_ids(self) -> list[uuid.UUID]:
         """Provides a list of amenity IDs associated with the listing."""
         return [amenity.id for amenity in self.amenities]
+
+    @hybrid_property
+    def thumbnail_url(self) -> str | None:
+        """Returns the URL of the thumbnail image, if one exists."""
+        if not self.images:
+            return None
+        for image in self.images:
+            if image.is_thumbnail:
+                return image.url
+        # Fallback to the first image if no specific thumbnail is set
+        return self.images[0].url
 
 
 class Hotel(Listing):

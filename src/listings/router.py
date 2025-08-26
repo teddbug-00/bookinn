@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.dependencies import get_current_user
 from src.database import get_db_session
 from src.listings import services as listing_service
-from src.listings.schemas import ListingCreate, ListingRead
+from src.listings.schemas import ListingCreate, ListingRead, ListingSummaryRead
 from src.users.models import User
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
 
-@router.get("/", response_model=Sequence[ListingRead], summary="Get all listings")
+@router.get("/", response_model=Sequence[ListingSummaryRead], summary="Get all listings")
 async def get_all_listings(session: AsyncSession = Depends(get_db_session)):
     """ Retrieves a list of all available listings """
     return await listing_service.get_listings(session)
