@@ -7,8 +7,9 @@ from sqlalchemy.orm import selectinload
 
 from src.amenities import repository as amenity_repository
 from src.listings import models, repository as listing_repository
-from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException
-from src.listings.schemas import ListingCreate
+from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException, NotListingOwnerException
+from src.listings.schemas import ListingCreate, ListingUpdate
+from src.users.models import User
 
 
 async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.UUID]) -> List[models.Amenity]:
@@ -67,3 +68,39 @@ async def get_listing_by_id(db: AsyncSession, listing_id: uuid.UUID) -> models.L
     if not db_listing:
         raise ListingNotFoundException(listing_id)
     return db_listing
+
+
+async def update_listing(
+        db: AsyncSession, listing_id: uuid.UUID, listing_in: ListingUpdate, current_user: User
+) -> models.Listing:
+    """Updates a listing's details, ensuring the user is the owner."""
+    db_listing = await get_listing_by_id(db, listing_id)
+
+    # Business Rule: Only the owner can update their listing.
+    if db_listing.owner_id != current_user.id:
+        raise NotListingOwnerException()
+
+    update_data = listing_in.model_dump(exclude_unset=True)
+
+    if "amenity_ids" in update_data:
+        db_listing.amenities = await _validate_and_get_amenities(db, update_data.pop("amenity_ids"))
+
+    for field, value in update_data.items():
+        setattr(db_listing, field, value)
+
+    db.add(db_listing)
+    await db.commit()
+    await db.refresh(db_listing)
+    return db_listing
+
+
+async def delete_listing(db: AsyncSession, listing_id: uuid.UUID, current_user: User) -> None:
+    """Deletes a listing, ensuring the user is the owner."""
+    db_listing = await get_listing_by_id(db, listing_id)
+
+    if db_listing.owner_id != current_user.id:
+        raise NotListingOwnerException()
+
+    await db.delete(db_listing)
+    await db.commit()
+    return None

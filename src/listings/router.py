@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.dependencies import get_current_user
 from src.database import get_db_session
 from src.listings import services as listing_service
-from src.listings.schemas import ListingCreate, ListingRead, ListingSummaryRead
+from src.listings.schemas import ListingCreate, ListingRead, ListingSummaryRead, ListingUpdate
 from src.users.models import User
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
@@ -38,3 +38,29 @@ async def create_new_listing(
     """
     listing = await listing_service.create_listing(db=session, listing_in=listing_in, owner_id=current_user.id)
     return listing
+
+
+@router.patch("/{listing_id}", response_model=ListingRead, summary="Update a listing")
+async def update_existing_listing(
+        listing_id: uuid.UUID,
+        listing_in: ListingUpdate,
+        current_user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Updates a listing's details. Only the owner of the listing can perform this action.
+    """
+    return await listing_service.update_listing(session, listing_id, listing_in, current_user)
+
+
+@router.delete("/{listing_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a listing")
+async def delete_existing_listing(
+        listing_id: uuid.UUID,
+        current_user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Deletes a listing. Only the owner of the listing can perform this action.
+    """
+    await listing_service.delete_listing(session, listing_id, current_user)
+    return None

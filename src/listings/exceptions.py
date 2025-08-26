@@ -19,3 +19,11 @@ class InvalidAmenitiesException(AppError):
     def __init__(self, invalid_ids: list[str]):
         message = f"The following amenity IDs are invalid or not found: {invalid_ids}"
         super().__init__(message)
+
+
+class NotListingOwnerException(AppError):
+    status_code = status.HTTP_403_FORBIDDEN
+
+    def __init__(self):
+        message = "You do not have permission to modify this listing."
+        super().__init__(message)

@@ -74,6 +74,40 @@ ListingCreate = Annotated[
 ]
 
 
+# --- Update Schemas (for PATCH request body) ---
+class ListingUpdate(BaseModel):
+    """Base schema for updating a listing, all fields are optional."""
+    name: str | None = Field(None, min_length=3, max_length=100)
+    description: str | None = None
+    address: str | None = None
+    city: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    price: float | None = Field(None, gt=0)
+    price_unit: PricingUnit | None = None
+    amenity_ids: List[uuid.UUID] | None = None
+
+
+class HotelUpdate(ListingUpdate):
+    star_rating: int | None = Field(None, ge=1, le=5)
+
+
+class ApartmentUpdate(ListingUpdate):
+    number_of_bedrooms: int | None = Field(None, gt=0)
+    number_of_bathrooms: int | None = Field(None, gt=0)
+    max_guests: int | None = Field(None, gt=0)
+
+
+class HostelUpdate(ListingUpdate):
+    dorm_bed_count: int | None = None
+    private_room_count: int | None = None
+
+
+class GuesthouseUpdate(ListingUpdate):
+    number_of_rooms: int | None = Field(None, gt=0)
+    host_on_site: bool | None = None
+
+
 # --- Read Schemas (for response body) ---
 class ListingReadBase(ListingBase):
     id: uuid.UUID
