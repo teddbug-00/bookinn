@@ -19,6 +19,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(sa.String(length=50), nullable=False)
     date_of_birth: Mapped[date] = mapped_column(sa.Date, nullable=False)
     profile_picture_url: Mapped[str | None] = mapped_column(sa.String(length=2048), nullable=True)
+    profile_picture_public_id: Mapped[str | None] = mapped_column(sa.String(length=255), nullable=True)
     is_admin: Mapped[bool] = mapped_column(sa.Boolean, default=False)
     listings: Mapped[List["Listing"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     reviews: Mapped[List["Review"]] = relationship(back_populates="reviewer", cascade="all, delete-orphan")
