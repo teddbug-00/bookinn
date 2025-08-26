@@ -1,7 +1,7 @@
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.cloudinary.client import upload_image
+from src.cloudinary.client import CloudinaryClient
 from src.images import repository as image_repository
 from src.images.exceptions import ThumbnailAlreadyExistsException
 from src.images.models import Image
@@ -10,7 +10,11 @@ from src.listings.models import Listing
 
 
 async def upload_listing_image(
-        db: AsyncSession, listing: Listing, file: UploadFile, is_thumbnail: bool
+        db: AsyncSession,
+        listing: Listing,
+        file: UploadFile,
+        is_thumbnail: bool,
+        client: CloudinaryClient,
 ) -> Image:
     """
     Handles the business logic of uploading an image for a listing.
@@ -22,7 +26,7 @@ async def upload_listing_image(
             raise ThumbnailAlreadyExistsException()
 
     # Upload the image to cloudinary in a "listings" folder
-    upload_result = await upload_image(file, folder="listings")
+    upload_result = await client.upload_image(file, folder="listings")
     image_url = upload_result.get("secure_url")
 
     image_data = ImageCreate(url=image_url, is_thumbnail=is_thumbnail, listing_id=listing.id)
