@@ -10,7 +10,6 @@ from src.database import get_db_session
 
 router = APIRouter(
     prefix="/amenities",
-    tags=["Admin: Amenities"],
     dependencies=[Depends(get_current_admin_user)]
 )
 
