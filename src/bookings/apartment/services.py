@@ -1,12 +1,10 @@
-from typing import Sequence
-
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.bookings.apartments import repository as booking_repository
+from src.bookings import repository as generic_booking_repo
+from src.bookings.apartment import repository as apartment_booking_repo
+from src.bookings.apartment.schemas import ApartmentBookingCreate
 from src.bookings.exceptions import ListingNotAvailableException, InvalidLeasePeriodException
-from src.bookings.models import Booking
-from src.bookings.schemas import ApartmentBookingCreate
 from src.listings.models import Apartment
 from src.users.models import User
 
@@ -22,7 +20,7 @@ async def create_apartment_booking(db: AsyncSession, booking_in: ApartmentBookin
 
     # 2. Calculate check-out date and check for availability
     check_out_date = booking_in.check_in_date + relativedelta(months=booking_in.number_of_months)
-    is_unavailable = await booking_repository.check_for_overlapping_bookings(
+    is_unavailable = await generic_booking_repo.check_for_overlapping_bookings(
         db, apartment.id, booking_in.check_in_date, check_out_date
     )
     if is_unavailable:
@@ -32,11 +30,4 @@ async def create_apartment_booking(db: AsyncSession, booking_in: ApartmentBookin
     total_price = apartment.price * booking_in.number_of_months
 
     # 4. Create the booking record
-    db_booking = await booking_repository.create(db, booking_in, user.id, total_price, check_out_date)
-
-    return db_booking
-
-
-async def get_user_bookings(db: AsyncSession, user: User) -> Sequence[Booking]:
-    """Retrieves all bookings for the currently authenticated user."""
-    return await booking_repository.get_for_user(db, user.id)
+    return await apartment_booking_repo.create(db, booking_in, user.id, total_price, check_out_date)

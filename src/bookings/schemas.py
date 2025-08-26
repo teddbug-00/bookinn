@@ -1,10 +1,11 @@
 import datetime
 import uuid
-from typing import Annotated, Literal, Union
+from typing import Annotated, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.listings.enums import ListingType
+from src.bookings.apartment.schemas import ApartmentBookingCreate, ApartmentBookingRead
+from src.bookings.guesthouse.schemas import GuesthouseBookingCreate, GuesthouseBookingRead
 
 
 class BookingBase(BaseModel):
@@ -13,15 +14,9 @@ class BookingBase(BaseModel):
     check_in_date: datetime.date
 
 
-class ApartmentBookingCreate(BookingBase):
-    """Schema for creating a new apartment booking."""
-    type: Literal[ListingType.APARTMENT]
-    number_of_months: int
-
-
 # A discriminated union for FastAPI to validate the request body against
 BookingCreate = Annotated[
-    Union[ApartmentBookingCreate],
+    Union[ApartmentBookingCreate, GuesthouseBookingCreate],
     Field(discriminator="type")
 ]
 
@@ -38,12 +33,8 @@ class BookingReadBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ApartmentBookingRead(BookingReadBase):
-    type: Literal[ListingType.APARTMENT]
-
-
 # A discriminated union for Pydantic to serialize the response with
 BookingRead = Annotated[
-    Union[ApartmentBookingRead],
+    Union[ApartmentBookingRead, GuesthouseBookingRead],
     Field(discriminator="type")
 ]

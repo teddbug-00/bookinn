@@ -6,15 +6,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.amenities import repository as amenity_repository
+from src.amenities.models import Amenity
+from src.bookings import repository as booking_repository
+from src.bookings.models import Booking
 from src.cloudinary import utils as cloudinary_utils
 from src.listings import models, repository as listing_repository
 from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException, NotListingOwnerException
+from src.listings.models import Listing
 from src.listings.schemas import ListingCreate, ListingUpdate
 from src.pagination import PaginationParams
 from src.users.models import User
 
 
-async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.UUID]) -> List[models.Amenity]:
+async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.UUID]) -> List[Amenity]:
     """Helper to fetch and validate amenities for a new listing."""
     if not amenity_ids:
         return []
@@ -29,7 +33,7 @@ async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.U
     return list(amenities)
 
 
-async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: uuid.UUID) -> models.Listing:
+async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: uuid.UUID) -> Listing:
     """Creates a new listing, validating and associating amenities."""
     model_class = getattr(models, listing_in.type.value.capitalize())
 
@@ -65,7 +69,12 @@ async def get_listings(db: AsyncSession, pagination: PaginationParams) -> (Seque
     return items, total
 
 
-async def get_listing_by_id(db: AsyncSession, listing_id: uuid.UUID) -> models.Listing:
+async def get_user_bookings(db: AsyncSession, user: User) -> Sequence[Booking]:
+    """Retrieves all bookings for the currently authenticated user."""
+    return await booking_repository.get_for_user(db, user.id)
+
+
+async def get_listing_by_id(db: AsyncSession, listing_id: uuid.UUID) -> Listing:
     """Retrieves a single listing by its ID, raising an error if not found."""
     db_listing = await listing_repository.get_by_id(db, listing_id)
     if not db_listing:

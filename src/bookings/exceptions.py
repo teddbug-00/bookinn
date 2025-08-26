@@ -1,3 +1,5 @@
+import datetime
+
 from starlette import status
 
 from src.exceptions.base import AppError
@@ -21,10 +23,18 @@ class InvalidLeasePeriodException(AppError):
         super().__init__(message)
 
 
-class InvalidListingTypeException(AppError):
-    """Raised when a listing is not available for the requested dates."""
-    status_code = status.HTTP_409_CONFLICT
+class NotBookingOwnerException(AppError):
+    """Raised when a user attempts to modify a booking they do not own."""
+    status_code = status.HTTP_403_FORBIDDEN
 
     def __init__(self):
-        message = "The selected listing type does not match any of the available options."
+        message = "You do not have permission to modify this booking."
+        super().__init__(message)
+
+
+class NotEnoughRoomsException(AppError):
+    status_code = status.HTTP_409_CONFLICT
+
+    def __init__(self, date: datetime.date, available: int):
+        message = f"Not enough rooms available on {date}. Only {available} left."
         super().__init__(message)
