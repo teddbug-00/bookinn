@@ -5,8 +5,8 @@ from typing import Sequence
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.bookings.apartments.schemas import ApartmentBookingCreate
 from src.bookings.models import Booking
+from src.bookings.schemas import ApartmentBookingCreate
 
 
 async def check_for_overlapping_bookings(

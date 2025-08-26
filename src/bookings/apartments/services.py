@@ -4,9 +4,9 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.bookings.apartments import repository as booking_repository
-from src.bookings.apartments.schemas import ApartmentBookingCreate
 from src.bookings.exceptions import ListingNotAvailableException, InvalidLeasePeriodException
 from src.bookings.models import Booking
+from src.bookings.schemas import ApartmentBookingCreate
 from src.listings.models import Apartment
 from src.users.models import User
 

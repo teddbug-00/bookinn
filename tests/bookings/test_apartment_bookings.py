@@ -33,12 +33,13 @@ async def test_create_apartment_booking_success(reviewer_client: AsyncClient, cr
     check_in = today + datetime.timedelta(days=5)
 
     booking_data = {
+        "type": "apartment",
         "listing_id": created_apartment_id,
         "check_in_date": check_in.isoformat(),
         "number_of_months": 4
     }
 
-    response = await reviewer_client.post("/bookings/apartment", json=booking_data)
+    response = await reviewer_client.post("/bookings/", json=booking_data)
 
     assert response.status_code == 201
     data = response.json()
@@ -52,13 +53,14 @@ async def test_create_booking_for_unavailable_dates(reviewer_client: AsyncClient
     today = datetime.date.today()
     check_in = today + datetime.timedelta(days=20)
 
-    booking_data = {"listing_id": created_apartment_id, "check_in_date": check_in.isoformat(), "number_of_months": 3}
+    booking_data = {"type": "apartment", "listing_id": created_apartment_id, "check_in_date": check_in.isoformat(),
+                    "number_of_months": 3}
 
     # First booking should succeed
-    await reviewer_client.post("/bookings/apartment", json=booking_data)
+    await reviewer_client.post("/bookings/", json=booking_data)
 
     # Attempt to book overlapping dates again
-    response = await reviewer_client.post("/bookings/apartment", json=booking_data)
+    response = await reviewer_client.post("/bookings/", json=booking_data)
 
     assert response.status_code == 409
     assert "dates are not available" in response.json()["detail"]
@@ -70,8 +72,9 @@ async def test_create_booking_below_min_lease(reviewer_client: AsyncClient, crea
     today = datetime.date.today()
     check_in = today + datetime.timedelta(days=40)
 
-    booking_data = {"listing_id": created_apartment_id, "check_in_date": check_in.isoformat(), "number_of_months": 2}
-    response = await reviewer_client.post("/bookings/apartment", json=booking_data)
+    booking_data = {"type": "apartment", "listing_id": created_apartment_id, "check_in_date": check_in.isoformat(),
+                    "number_of_months": 2}
+    response = await reviewer_client.post("/bookings/", json=booking_data)
 
     assert response.status_code == 400
     assert "minimum lease period" in response.json()["detail"]
@@ -82,11 +85,12 @@ async def test_get_my_bookings(reviewer_client: AsyncClient, created_apartment_i
     """Test retrieving all bookings for the authenticated user."""
     # 1. Create a booking
     booking_data = {
+        "type": "apartment",
         "listing_id": created_apartment_id,
         "check_in_date": (datetime.date.today() + datetime.timedelta(days=60)).isoformat(),
         "number_of_months": 3
     }
-    await reviewer_client.post("/bookings/apartment", json=booking_data)
+    await reviewer_client.post("/bookings/", json=booking_data)
 
     # 2. Fetch the bookings for that user
     response = await reviewer_client.get("/bookings/my-bookings")

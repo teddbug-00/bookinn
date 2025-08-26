@@ -19,3 +19,12 @@ class InvalidLeasePeriodException(AppError):
     def __init__(self, min_months: int):
         message = f"The minimum lease period for this listing is {min_months} months."
         super().__init__(message)
+
+
+class InvalidListingTypeException(AppError):
+    """Raised when a listing is not available for the requested dates."""
+    status_code = status.HTTP_409_CONFLICT
+
+    def __init__(self):
+        message = "The selected listing type does not match any of the available options."
+        super().__init__(message)
