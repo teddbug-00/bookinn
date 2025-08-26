@@ -80,8 +80,16 @@ ListingCreate = Annotated[
 
 
 # --- Update Schemas (for PATCH request body) ---
-class ListingUpdate(ListingCore):
+class ListingUpdate(BaseModel):
     """Base schema for updating a listing, all fields are optional."""
+    name: str | None = Field(None, min_length=3, max_length=100)
+    description: str | None = None
+    address: str | None = None
+    city: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    price: float | None = Field(None, gt=0)
+    price_unit: PricingUnit | None = None
     amenity_ids: List[uuid.UUID] | None = None
 
 
@@ -110,7 +118,7 @@ class ListingReadBase(ListingCore):
     id: uuid.UUID
     owner_id: uuid.UUID
     average_rating: float | None = None
-    amenities: List[AmenityInListingRead] = []
+    amenity_ids: List[uuid.UUID] = []
     images: List[ImageRead] = []
 
     model_config = ConfigDict(from_attributes=True)
