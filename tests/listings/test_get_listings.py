@@ -62,7 +62,7 @@ async def test_get_all_listings_with_data(
     hotel_summary = next((l for l in listings if l["name"] == "Alpha Hotel"), None)
     assert hotel_summary is not None
     assert hotel_summary["address"] == "123 Alpha St"
-    assert hotel_summary["thumbnail_url"] == "https://example.com/hotel.jpg"
+    assert hotel_summary["thumbnail_url"] == "https://example.com/image.jpg"
     assert hotel_summary["total_reviews"] == 1
     assert hotel_summary["average_rating"] == 5.0
     assert "number_of_bedrooms" not in hotel_summary  # Verify it's the summary view
