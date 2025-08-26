@@ -22,6 +22,7 @@ class Booking(Base):
     check_out_date: Mapped[datetime.date] = mapped_column(sa.Date, nullable=False)
     total_price: Mapped[float] = mapped_column(sa.Numeric(10, 2), nullable=False)
     status: Mapped[BookingStatus] = mapped_column(sa.Enum(BookingStatus), default=BookingStatus.PENDING)
+    type: Mapped[str] = mapped_column(sa.String(50), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(sa.DateTime, default=sa.func.now())
 
     listing_id: Mapped[uuid.UUID] = mapped_column(sa.ForeignKey("listings.id"), nullable=False, index=True)
