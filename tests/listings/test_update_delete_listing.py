@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock
+
 import pytest
 from httpx import AsyncClient
 
@@ -54,11 +56,25 @@ async def test_delete_listing_as_non_owner(reviewer_client: AsyncClient, created
 
 
 @pytest.mark.asyncio
-async def test_delete_listing_as_owner(listing_owner_client: AsyncClient, created_listing_id: str):
+async def test_delete_listing_as_owner(listing_owner_client: AsyncClient, created_listing_id: str, monkeypatch):
     """Test that the owner of a listing can successfully delete it."""
+    # Mock the cloudinary functions
+    mock_upload = AsyncMock(return_value={"secure_url": "https://mock.cloudinary.com/image.jpg",
+                                          "public_id": f"listings/{created_listing_id}/image"})
+    mock_delete_folder = AsyncMock()
+    monkeypatch.setattr("src.cloudinary.utils.upload_image", mock_upload)
+    monkeypatch.setattr("src.cloudinary.utils.delete_folder", mock_delete_folder)
+
+    # Upload an image to the listing so we can verify its folder gets deleted
+    files = {"file": ("image.jpg", b"content", "image/jpeg")}
+    await listing_owner_client.post(f"/listings/{created_listing_id}/images", files=files)
+
     # Delete the listing
     delete_response = await listing_owner_client.delete(f"/listings/{created_listing_id}")
     assert delete_response.status_code == 204
+
+    # Verify the Cloudinary folder deletion was called with the correct path
+    mock_delete_folder.assert_called_once_with(f"listings/{created_listing_id}")
 
     # Verify the listing is gone
     get_response = await listing_owner_client.get(f"/listings/{created_listing_id}")

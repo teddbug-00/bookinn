@@ -1,3 +1,4 @@
+import cloudinary.api
 import cloudinary.uploader
 from fastapi import UploadFile
 from fastapi.concurrency import run_in_threadpool
@@ -28,6 +29,16 @@ async def delete_image(public_id: str) -> dict:
     Deletes an image from Cloudinary using its public ID.
     """
     try:
-        return await run_in_threadpool(cloudinary.uploader.destroy, public_id)
+        return await run_in_threadpool(cloudinary.api.delete_resources, [public_id])
+    except Exception as e:
+        raise CloudinaryUploadException() from e
+
+
+async def delete_folder(folder_path: str):
+    """
+    Deletes an entire folder and all its contents from Cloudinary.
+    """
+    try:
+        await run_in_threadpool(cloudinary.api.delete_folder, folder_path)
     except Exception as e:
         raise CloudinaryUploadException() from e

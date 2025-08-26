@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.amenities import repository as amenity_repository
+from src.cloudinary import utils as cloudinary_utils
 from src.listings import models, repository as listing_repository
 from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException, NotListingOwnerException
 from src.listings.schemas import ListingCreate, ListingUpdate
@@ -109,6 +110,11 @@ async def delete_listing(db: AsyncSession, listing_id: uuid.UUID, current_user: 
     if db_listing.owner_id != current_user.id:
         raise NotListingOwnerException()
 
+    # First, delete all associated images from Cloudinary by deleting the folder
+    folder_path = f"listings/{listing_id}"
+    await cloudinary_utils.delete_folder(folder_path)
+
+    # Then, delete the listing from our database.
     await db.delete(db_listing)
     await db.commit()
     return None
