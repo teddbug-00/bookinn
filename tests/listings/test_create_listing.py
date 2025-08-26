@@ -28,8 +28,8 @@ async def test_create_hotel_listing_authenticated(
 ):
     """Test that an authenticated user can create a hotel listing with amenities."""
     # First, create some amenities as an admin to ensure they exist
-    amenity1_res = await authenticated_admin_client.post("/amenities", json={"name": "Pool"})
-    amenity2_res = await authenticated_admin_client.post("/amenities", json={"name": "Gym"})
+    amenity1_res = await authenticated_admin_client.post("/admin/amenities", json={"name": "Pool"})
+    amenity2_res = await authenticated_admin_client.post("/admin/amenities", json={"name": "Gym"})
     amenity1_id = amenity1_res.json()["id"]
     amenity2_id = amenity2_res.json()["id"]
 
