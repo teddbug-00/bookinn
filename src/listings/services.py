@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Sequence
+from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +10,7 @@ from src.cloudinary import utils as cloudinary_utils
 from src.listings import models, repository as listing_repository
 from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException, NotListingOwnerException
 from src.listings.schemas import ListingCreate, ListingUpdate
+from src.pagination import Page, PaginationParams
 from src.users.models import User
 
 
@@ -58,9 +59,10 @@ async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: 
     return refreshed_listing
 
 
-async def get_listings(db: AsyncSession) -> Sequence[models.Listing]:
+async def get_listings(db: AsyncSession, pagination: PaginationParams) -> Page[models.Listing]:
     """Retrieves all listings from the database."""
-    return await listing_repository.get_all(db)
+    items, total = await listing_repository.get_all(db, pagination.offset, pagination.size)
+    return Page(items=items, total=total, page=pagination.page, size=pagination.size)
 
 
 async def get_listing_by_id(db: AsyncSession, listing_id: uuid.UUID) -> models.Listing:

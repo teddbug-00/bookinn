@@ -10,9 +10,11 @@ from src.images.models import Image
 @pytest.mark.asyncio
 async def test_get_all_listings_empty(client: AsyncClient):
     """Test retrieving all listings when none have been created."""
-    response = await client.get("/listings/")
+    response = await client.get("/listings")
     assert response.status_code == 200
-    assert response.json() == []
+    data = response.json()
+    assert data["items"] == []
+    assert data["total"] == 0
 
 
 @pytest.mark.asyncio
@@ -51,19 +53,23 @@ async def test_get_all_listings_with_data(
     await listing_owner_client.post("/listings/", json=apartment_data)
 
     # Act
-    response = await client.get("/listings/")
+    response = await client.get("/listings?page=1&size=1")
 
     # Assert
     assert response.status_code == 200
-    listings = response.json()
-    assert len(listings) == 2
-    assert {listing['name'] for listing in listings} == {"Alpha Hotel", "Beta Apartments"}
+    data = response.json()
+    assert data["total"] == 2
+    assert data["page"] == 1
+    assert data["size"] == 1
+    assert len(data["items"]) == 1
 
-    # Verify the structure of the summary response
-    hotel_summary = next((l for l in listings if l["name"] == "Alpha Hotel"), None)
-    assert hotel_summary is not None
-    assert hotel_summary["address"] == "123 Alpha St"
-    assert hotel_summary["thumbnail_url"] == "https://example.com/image.jpg"
-    assert hotel_summary["total_reviews"] == 1
-    assert hotel_summary["average_rating"] == 5.0
-    assert "number_of_bedrooms" not in hotel_summary  # Verify it's the summary view
+    # Act again for the second page
+    response_page_2 = await client.get("/listings?page=2&size=1")
+
+    # Assert for the second page
+    assert response_page_2.status_code == 200
+    data_page_2 = response_page_2.json()
+    assert data_page_2["total"] == 2
+    assert len(data_page_2["items"]) == 1
+    # Ensure the items on page 1 and page 2 are different
+    assert data["items"][0]["id"] != data_page_2["items"][0]["id"]

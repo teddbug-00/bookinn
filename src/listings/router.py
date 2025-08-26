@@ -1,5 +1,5 @@
 import uuid
-from typing import Annotated, Sequence
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,15 +8,19 @@ from src.auth.dependencies import get_current_user
 from src.database import get_db_session
 from src.listings import services as listing_service
 from src.listings.schemas import ListingCreate, ListingRead, ListingSummaryRead, ListingUpdate
+from src.pagination import Page, PaginationParams
 from src.users.models import User
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
 
-@router.get("/", response_model=Sequence[ListingSummaryRead], summary="Get all listings")
-async def get_all_listings(session: AsyncSession = Depends(get_db_session)):
+@router.get("/", response_model=Page[ListingSummaryRead], summary="Get all listings")
+async def get_all_listings(
+        pagination: PaginationParams = Depends(),
+        session: AsyncSession = Depends(get_db_session)
+):
     """ Retrieves a list of all available listings """
-    return await listing_service.get_listings(session)
+    return await listing_service.get_listings(session, pagination)
 
 
 @router.get("/{listing_id}", response_model=ListingRead, summary="Get a single listing by ID")
