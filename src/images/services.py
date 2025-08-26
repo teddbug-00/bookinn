@@ -1,6 +1,7 @@
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.cloudinary import upload_image
 from src.images import repository as image_repository
 from src.images.exceptions import ThumbnailAlreadyExistsException
 from src.images.models import Image
@@ -20,11 +21,11 @@ async def upload_listing_image(
         if existing_thumbnail:
             raise ThumbnailAlreadyExistsException()
 
-    # Simulate the upload by creating a dummy URL.
-    # In a real app, you'd get the URL from your storage service (e.g., S3).
-    dummy_url = f"https://example.com/images/{listing.id}/{file.filename}"
+    # Upload the image to cloudinary in a "listings" folder
+    upload_result = await upload_image(file, folder="listing")
+    image_url = upload_result.get("secure_url")
 
-    image_data = ImageCreate(url=dummy_url, is_thumbnail=is_thumbnail, listing_id=listing.id)
+    image_data = ImageCreate(url=image_url, is_thumbnail=is_thumbnail, listing_id=listing.id)
     db_image = await image_repository.create(db, image_data)
 
     await db.commit()
