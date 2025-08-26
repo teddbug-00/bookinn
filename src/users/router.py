@@ -1,9 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import get_current_user
+from src.cloudinary.client import CloudinaryClient
+from src.cloudinary.dependencies import get_cloudinary_client
 from src.database import get_db_session
 from src.users import services
 from src.users.models import User
@@ -42,4 +44,20 @@ async def register_user(
 ):
     """Registers a new user (creates a user resource)."""
     user = await services.create_user(db=session, user_in=user_in)
+    return user
+
+
+@router.post("/profile/picture", response_model=UserRead, summary="Upload a profile picture")
+async def upload_profile_picture(
+        file: UploadFile,
+        current_user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_db_session),
+        cloudinary_client: CloudinaryClient = Depends(get_cloudinary_client),
+):
+    """
+    Uploads or replaces the profile picture for the currently authenticated user.
+    """
+    user = await services.set_profile_picture(
+        db=session, user=current_user, file=file, client=cloudinary_client
+    )
     return user

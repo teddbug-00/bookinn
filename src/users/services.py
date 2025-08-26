@@ -1,6 +1,9 @@
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth import utils as auth_utils
+from src.cloudinary import utils as cloudinary_utils
+from src.cloudinary.client import CloudinaryClient
 from src.users.exceptions import UserAlreadyExistsException
 from src.users.models import User
 from src.users.repository import get_user_by_email
@@ -32,6 +35,35 @@ async def update_user(db: AsyncSession, user: User, user_in: UserUpdate) -> User
 
     for field, value in update_data.items():
         setattr(user, field, value)
+
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+async def set_profile_picture(
+        db: AsyncSession,
+        user: User,
+        file: UploadFile,
+        client: CloudinaryClient,
+) -> User:
+    """
+    Uploads a new profile picture for a user, deleting the old one if it exists.
+    """
+    # If user already has a profile picture, delete the old one from Cloudinary
+    if user.profile_picture_public_id:
+        await cloudinary_utils.delete_image(user.profile_picture_public_id)
+
+    # Upload the new image to Cloudinary
+    folder_path = f"profile_pictures/{user.id}"
+    upload_result = await cloudinary_utils.upload_image(
+        file, folder=folder_path, transformation=client.transformation_rules
+    )
+
+    # Update the user's profile picture details in the database
+    user.profile_picture_url = upload_result.get("secure_url")
+    user.profile_picture_public_id = upload_result.get("public_id")
 
     db.add(user)
     await db.commit()
