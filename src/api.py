@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from src.amenities.router import router as amenities_router
 from src.auth.router import router as auth_router
 from src.listings.router import router as listings_router
+from src.reviews.router import router as reviews_router
 from src.users.router import router as users_router
 
 # This is the master router that will include all the feature-specific routers.
@@ -12,5 +13,6 @@ api_router = APIRouter()
 
 api_router.include_router(auth_router)
 api_router.include_router(users_router)
-api_router.include_router(amenities_router)
 api_router.include_router(listings_router)
+api_router.include_router(reviews_router)
+api_router.include_router(amenities_router)

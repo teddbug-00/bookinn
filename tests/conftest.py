@@ -55,19 +55,22 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(test_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client_factory(test_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
-    Provides an asynchronous HTTP client for testing FastAPI endpoints.
-    Overrides the database dependency to use the test session.
+    Provides a factory for creating asynchronous HTTP clients for testing.
+    This ensures each client uses the correct test database session.
     """
-    # Override the get_db_session dependency to use the test session
     app.dependency_overrides[get_db_session] = lambda: test_session
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        yield ac
+    yield lambda: AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
-    # Clean up dependency override
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client(client_factory) -> AsyncClient:
+    """Provides a default, unauthenticated client for tests."""
+    return client_factory()
 
 
 @pytest_asyncio.fixture(scope="function")
