@@ -49,3 +49,20 @@ async def get_image_with_listing(db: AsyncSession, image_id: uuid.UUID) -> Image
     if not db_image:
         raise ImageNotFoundException(image_id)
     return db_image
+
+
+async def delete_listing_image(db: AsyncSession, image_id: uuid.UUID, listing: Listing) -> None:
+    """
+    Deletes an image, first from Cloudinary and then from the local database.
+    Ensures the image belongs to the specified listing.
+    """
+    db_image = await image_repository.get_by_id(db, image_id)
+    if not db_image or db_image.listing_id != listing.id:
+        raise ImageNotFoundException(image_id)
+
+    # First, delete from Cloudinary
+    await cloudinary_utils.delete_image(db_image.public_id)
+
+    # Then, delete from our database
+    await image_repository.delete(db, db_image)
+    await db.commit()
