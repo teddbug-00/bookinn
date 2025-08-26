@@ -18,8 +18,9 @@ async def created_listing_id(listing_owner_client: AsyncClient) -> str:
 @pytest.mark.asyncio
 async def test_upload_image_as_owner(listing_owner_client: AsyncClient, created_listing_id: str, monkeypatch):
     """Test that the owner can upload an image to their listing."""
-    # Mock the cloudinary upload function to avoid real network calls
-    mock_upload = AsyncMock(return_value={"secure_url": "https://mock.cloudinary.com/test_image.jpg"})
+    # Mock the Cloudinary upload function to avoid real network calls
+    mock_upload = AsyncMock(return_value={"secure_url": "https://mock.cloudinary.com/test_image.jpg",
+                                          "public_id": "listings/some_id/test_image"})
     monkeypatch.setattr("src.cloudinary.utils.upload_image", mock_upload)
 
     file_content = b"test image content"
@@ -29,6 +30,7 @@ async def test_upload_image_as_owner(listing_owner_client: AsyncClient, created_
     assert response.status_code == 201
     data = response.json()
     assert data["url"] == "https://mock.cloudinary.com/test_image.jpg"
+    assert "public_id" not in data
     assert data["is_thumbnail"] is False
     mock_upload.assert_called_once()
 
@@ -52,7 +54,8 @@ async def test_upload_thumbnail_twice(listing_owner_client: AsyncClient, created
     monkeypatch.setattr("src.cloudinary.utils.upload_image", mock_upload)
 
     # Upload the first thumbnail
-    mock_upload.return_value = {"secure_url": "https://mock.cloudinary.com/thumbnail1.jpg"}
+    mock_upload.return_value = {"secure_url": "https://mock.cloudinary.com/thumbnail1.jpg",
+                                "public_id": "listings/some_id/thumbnail1"}
     files = {"file": ("thumbnail1.jpg", b"thumb1", "image/jpeg")}
     data = {"is_thumbnail": "true"}
     await listing_owner_client.post(f"/listings/{created_listing_id}/images", files=files, data=data)
@@ -64,3 +67,33 @@ async def test_upload_thumbnail_twice(listing_owner_client: AsyncClient, created
 
     assert response.status_code == 409
     assert "thumbnail for this listing already exists" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_delete_image(listing_owner_client: AsyncClient, reviewer_client: AsyncClient, created_listing_id: str,
+                            monkeypatch):
+    """Test that an owner can delete an image, but a non-owner cannot."""
+    # Mock the Cloudinary upload and delete functions
+    mock_upload = AsyncMock(return_value={"secure_url": "https://mock.cloudinary.com/deletable.jpg",
+                                          "public_id": "listings/some_id/deletable"})
+    mock_delete = AsyncMock(return_value={"result": "ok"})
+    monkeypatch.setattr("src.cloudinary.utils.upload_image", mock_upload)
+    monkeypatch.setattr("src.cloudinary.utils.delete_image", mock_delete)
+
+    # 1. Upload an image as the owner
+    files = {"file": ("deletable.jpg", b"delete_me", "image/jpeg")}
+    upload_res = await listing_owner_client.post(f"/listings/{created_listing_id}/images", files=files)
+    assert upload_res.status_code == 201
+    image_id = upload_res.json()["id"]
+
+    # 2. Attempt to delete the image as a non-owner (should fail)
+    non_owner_delete_res = await reviewer_client.delete(f"/images/{image_id}")
+    assert non_owner_delete_res.status_code == 403
+    assert "permission to modify" in non_owner_delete_res.json()["detail"]
+
+    # 3. Delete the image as the owner (should succeed)
+    owner_delete_res = await listing_owner_client.delete(f"/images/{image_id}")
+    assert owner_delete_res.status_code == 204
+
+    # 4. Verify the Cloudinary delete function was called
+    mock_delete.assert_called_once_with("listings/some_id/deletable")

@@ -19,7 +19,8 @@ async def test_get_single_listing_by_id(client: AsyncClient, authenticated_clien
     listing_id = uuid.UUID(create_response.json()["id"])  # Convert string to UUID object
 
     # Create an image associated with the listing
-    image = Image(url="https://example.com/gamma.jpg", is_thumbnail=True, listing_id=listing_id)
+    image = Image(url="https://example.com/gamma.jpg", public_id="test/gamma", is_thumbnail=True,
+                  listing_id=listing_id)
     test_session.add(image)
     await test_session.commit()
 

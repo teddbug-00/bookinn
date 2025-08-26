@@ -1,3 +1,5 @@
+import uuid
+
 from starlette import status
 
 from src.exceptions.base import AppError
@@ -18,4 +20,13 @@ class ThumbnailAlreadyExistsException(AppError):
 
     def __init__(self):
         message = "A thumbnail for this listing already exists. Please unset the current thumbnail first."
+        super().__init__(message)
+
+
+class ImageNotFoundException(AppError):
+    """Raised when an image with a given ID is not found."""
+    status_code = status.HTTP_404_NOT_FOUND
+
+    def __init__(self, image_id: uuid.UUID):
+        message = f"Image with ID '{image_id}' not found."
         super().__init__(message)

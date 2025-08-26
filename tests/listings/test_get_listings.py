@@ -32,7 +32,8 @@ async def test_get_all_listings_with_data(
     hotel_id = uuid.UUID(hotel_res.json()["id"])
 
     # Add an image to the hotel to test the thumbnail
-    image = Image(url="https://example.com/image.jpg", is_thumbnail=True, listing_id=hotel_id)
+    image = Image(url="https://example.com/image.jpg", public_id="test/image", is_thumbnail=True,
+                  listing_id=hotel_id)
     test_session.add(image)
     await test_session.commit()
 

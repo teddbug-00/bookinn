@@ -33,3 +33,19 @@ async def upload_image_for_listing(
 
     image = await image_service.upload_listing_image(session, listing, file, is_thumbnail, cloudinary_client)
     return image
+
+
+@router.delete("/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_image_from_listing(
+        image_id: uuid.UUID,
+        current_user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_db_session),
+):
+    """Deletes an image. Only the owner of the listing that the image belongs to can perform this action."""
+    # We need to fetch the image and its associated listing to verify ownership
+    image_to_delete = await image_service.get_image_with_listing(session, image_id)
+    if image_to_delete.listing.owner_id != current_user.id:
+        raise NotListingOwnerException()
+
+    await image_service.delete_listing_image(session, image_id, image_to_delete.listing)
+    return None

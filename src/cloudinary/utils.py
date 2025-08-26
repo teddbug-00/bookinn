@@ -21,3 +21,13 @@ async def upload_image(file: UploadFile, folder: str, transformation: dict) -> d
         return result
     except Exception as e:
         raise CloudinaryUploadException() from e
+
+
+async def delete_image(public_id: str) -> dict:
+    """"
+    Deletes an image from Cloudinary using its public ID.
+    """
+    try:
+        return await run_in_threadpool(cloudinary.uploader.destroy, public_id)
+    except Exception as e:
+        raise CloudinaryUploadException() from e
