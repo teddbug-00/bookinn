@@ -1,13 +1,13 @@
 import uuid
-from typing import List
+from typing import List, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.amenities import repository as amenity_repository
-from src.listings import models
-from src.listings.exceptions import InvalidAmenitiesException
+from src.listings import models, repository as listing_repository
+from src.listings.exceptions import InvalidAmenitiesException, ListingNotFoundException
 from src.listings.schemas import ListingCreate
 
 
@@ -20,7 +20,7 @@ async def _validate_and_get_amenities(db: AsyncSession, amenity_ids: List[uuid.U
 
     if len(amenities) != len(set(amenity_ids)):
         found_ids = {amenity.id for amenity in amenities}
-        invalid_ids = [str(aid) for aid in amenity_ids if aid not in found_ids]
+        invalid_ids = [str(amenity_id) for amenity_id in amenity_ids if amenity_id not in found_ids]
         raise InvalidAmenitiesException(invalid_ids=invalid_ids)
 
     return list(amenities)
@@ -44,10 +44,26 @@ async def create_listing(db: AsyncSession, listing_in: ListingCreate, owner_id: 
     # with the extra relationships.
     query = (
         select(models.Listing)
-        .options(selectinload(models.Listing.amenities))
+        .options(
+            selectinload(models.Listing.amenities),
+            selectinload(models.Listing.images)
+        )
         .where(models.Listing.id == db_listing.id)
     )
     result = await db.execute(query)
     refreshed_listing = result.scalar_one()
 
     return refreshed_listing
+
+
+async def get_listings(db: AsyncSession) -> Sequence[models.Listing]:
+    """Retrieves all listings from the database."""
+    return await listing_repository.get_all(db)
+
+
+async def get_listing_by_id(db: AsyncSession, listing_id: uuid.UUID) -> models.Listing:
+    """Retrieves a single listing by its ID, raising an error if not found."""
+    db_listing = await listing_repository.get_by_id(db, listing_id)
+    if not db_listing:
+        raise ListingNotFoundException(listing_id)
+    return db_listing

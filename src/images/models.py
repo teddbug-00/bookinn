@@ -16,6 +16,7 @@ class Image(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(sa.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     url: Mapped[str] = mapped_column(sa.String(length=2048), nullable=False)
+    is_thumbnail: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
     listing_id: Mapped[uuid.UUID] = mapped_column(sa.ForeignKey("listings.id"), nullable=False, index=True)
 
     listing: Mapped["Listing"] = relationship(back_populates="images")

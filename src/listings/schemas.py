@@ -3,6 +3,7 @@ from typing import Annotated, List, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.images.schemas import ImageRead
 from src.listings.enums import ListingType, PricingUnit
 
 
@@ -66,6 +67,7 @@ class ListingReadBase(ListingBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     average_rating: float | None = None
+    images: List[ImageRead] = []
 
     model_config = ConfigDict(from_attributes=True)
 
