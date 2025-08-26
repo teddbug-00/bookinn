@@ -58,6 +58,7 @@ class ApartmentCreate(ListingBase):
     number_of_bedrooms: int = Field(..., gt=0)
     number_of_bathrooms: int = Field(..., gt=0)
     max_guests: int = Field(..., gt=0)
+    min_lease_months: int | None = None
 
 
 class HostelCreate(ListingBase):
@@ -101,6 +102,7 @@ class ApartmentUpdate(ListingUpdate):
     number_of_bedrooms: int | None = Field(None, gt=0)
     number_of_bathrooms: int | None = Field(None, gt=0)
     max_guests: int | None = Field(None, gt=0)
+    min_lease_months: int = 1
 
 
 class HostelUpdate(ListingUpdate):
