@@ -1,7 +1,7 @@
 from typing import Generic, Sequence, TypeVar
 
 from fastapi import Query
-from pydantic.generics import GenericModel
+from pydantic import BaseModel
 
 # Define a generic TypeVar for Pydantic models
 T = TypeVar("T")
@@ -22,7 +22,7 @@ class PaginationParams:
         self.offset = (page - 1) * size
 
 
-class Page(GenericModel, Generic[T]):
+class Page(BaseModel, Generic[T]):
     """A generic Pydantic model for paginated API responses."""
     items: Sequence[T]
     total: int

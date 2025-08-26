@@ -10,7 +10,7 @@ from src.images.models import Image
 @pytest.mark.asyncio
 async def test_get_all_listings_empty(client: AsyncClient):
     """Test retrieving all listings when none have been created."""
-    response = await client.get("/listings")
+    response = await client.get("/listings/")
     assert response.status_code == 200
     data = response.json()
     assert data["items"] == []
@@ -53,7 +53,7 @@ async def test_get_all_listings_with_data(
     await listing_owner_client.post("/listings/", json=apartment_data)
 
     # Act
-    response = await client.get("/listings?page=1&size=1")
+    response = await client.get("/listings/?page=1&size=1")
 
     # Assert
     assert response.status_code == 200
@@ -64,7 +64,7 @@ async def test_get_all_listings_with_data(
     assert len(data["items"]) == 1
 
     # Act again for the second page
-    response_page_2 = await client.get("/listings?page=2&size=1")
+    response_page_2 = await client.get("/listings/?page=2&size=1")
 
     # Assert for the second page
     assert response_page_2.status_code == 200
